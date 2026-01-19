@@ -1,0 +1,109 @@
+services:
+  traefik:
+    image: traefik:v3.6.1
+    container_name: dekunstmakers-traefik
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--log.level=DEBUG"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.watch=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@example.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8081:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - dekunstmakers-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.dekunstmakers.com`)"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: dekunstmakers-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME:-strapi}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-strapi}
+      POSTGRES_DB: ${DATABASE_NAME:-strapi}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dekunstmakers-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-strapi}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  strapi:
+    image: ghcr.io/${GITHUB_OWNER:-yourusername}/dekunstmakers-strapi:latest
+    container_name: dekunstmakers-strapi
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-strapi}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-strapi}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-strapi}
+      HOST: 0.0.0.0
+      PORT: ${PORT:-1337}
+    volumes:
+      - strapi_uploads:/app/public/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dekunstmakers-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.strapi.rule=Host(`admin.dekunstmakers.com`)"
+      - "traefik.http.routers.strapi.entrypoints=web"
+      - "traefik.http.services.strapi.loadbalancer.server.port=1337"
+      - "traefik.http.routers.strapi-secure.rule=Host(`admin.dekunstmakers.com`)"
+      - "traefik.http.routers.strapi-secure.entrypoints=websecure"
+      - "traefik.http.routers.strapi-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.strapi-secure.service=strapi"
+
+  frontend:
+    image: dekunstmakers:latest
+    container_name: dekunstmakers-frontend
+    restart: unless-stopped
+    networks:
+      - dekunstmakers-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`new.dekunstmakers.com`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.frontend-secure.rule=Host(`new.dekunstmakers.com`)"
+      - "traefik.http.routers.frontend-secure.entrypoints=websecure"
+      - "traefik.http.routers.frontend-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.frontend-secure.service=frontend"
+
+volumes:
+  postgres_data:
+  traefik_letsencrypt:
+  strapi_uploads:
+
+networks:
+  dekunstmakers-network:
+    driver: bridge

@@ -37,9 +37,8 @@ The workflow will:
 4. Apply changes with `docker-compose up -d`
 
 **Required GitHub Secrets:**
-- `HETZNER_HOST`: Your Hetzner server IP/domain
-- `HETZNER_USER`: SSH username (usually `root`)
-- `HETZNER_SSH_KEY`: Private SSH key for server access
+- `SERVER_HOST`: Your server IP/domain
+- `SSH_PRIVATE_KEY`: Private SSH key for server access
 
 ## Deploying Individual Services
 

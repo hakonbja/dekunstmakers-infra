@@ -25,7 +25,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
-      - dekunstmakers-network
+      - dekunstmakers-infra
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`traefik.dekunstmakers.com`)"
@@ -45,7 +45,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - dekunstmakers-network
+      - dekunstmakers-infra
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-strapi}"]
       interval: 10s
@@ -72,7 +72,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - dekunstmakers-network
+      - dekunstmakers-infra
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.strapi.rule=Host(`admin.dekunstmakers.com`)"
@@ -88,7 +88,7 @@ services:
     container_name: dekunstmakers-frontend
     restart: unless-stopped
     networks:
-      - dekunstmakers-network
+      - dekunstmakers-infra
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`new.dekunstmakers.com`)"
@@ -105,5 +105,5 @@ volumes:
   strapi_uploads:
 
 networks:
-  dekunstmakers-network:
+  dekunstmakers-infra:
     driver: bridge

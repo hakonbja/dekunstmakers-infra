@@ -19,7 +19,7 @@ Consolidated Docker Compose setup for the Dekunstmakers platform.
 
 ### Initial Setup on Server
 
-1. Clone this repository to `/root/dekunstmakers-network` on your Hetzner server
+1. Clone this repository to `/root/dekunstmakers-infra` on your Hetzner server
 2. Copy `.env.example` to `.env` and configure your environment variables
 3. Run `docker-compose up -d` to start all services
 
@@ -56,4 +56,4 @@ docker-compose up -d strapi
 
 ## Network
 
-All services are on the `dekunstmakers-network` bridge network, allowing them to communicate via service names.
+All services are on the `dekunstmakers-infra` bridge network, allowing them to communicate via service names.

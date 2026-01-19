@@ -19,9 +19,10 @@ Consolidated Docker Compose setup for the Dekunstmakers platform.
 
 ### Initial Setup on Server
 
-1. Clone this repository to `/root/dekunstmakers-infra` on your Hetzner server
-2. Copy `.env.example` to `.env` and configure your environment variables
-3. Run `docker-compose up -d` to start all services
+1. Copy `.env.example` to `.env` on the server at `/root/dekunstmakers-infra/.env` and configure your environment variables
+2. Run the GitHub Actions deployment workflow (it will copy `docker-compose.yml` and start services)
+
+Alternatively, you can manually clone the repository and run `docker-compose up -d` locally on the server.
 
 ### Automated Deployment
 

@@ -25,15 +25,16 @@ Consolidated Docker Compose setup for the Dekunstmakers platform.
 
 ### Automated Deployment
 
-This repository includes a GitHub Actions workflow that automatically deploys infrastructure changes:
+This repository includes a GitHub Actions workflow for deploying infrastructure changes:
 
-- **Automatic**: Triggers on pushes to `main` branch
-- **Manual**: Can be triggered manually via GitHub Actions UI
+- **Manual only**: Triggered manually via GitHub Actions UI
+- **Tag selection**: Optionally specify a tag to deploy, or leave empty to use the latest tag
 
 The workflow will:
-1. Copy `docker-compose.yml` to the server
-2. Pull latest images for all services
-3. Apply changes with `docker-compose up -d`
+1. Checkout the specified tag (or latest tag if none provided)
+2. Copy `docker-compose.yml` to the server
+3. Pull latest images for all services
+4. Apply changes with `docker-compose up -d`
 
 **Required GitHub Secrets:**
 - `HETZNER_HOST`: Your Hetzner server IP/domain

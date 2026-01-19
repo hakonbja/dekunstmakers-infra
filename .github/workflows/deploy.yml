@@ -1,23 +1,46 @@
 name: Deploy Infrastructure
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to deploy (leave empty for latest release, or enter specific tag like v1.0.0)'
+        required: false
+        type: string
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Get latest release tag
+        id: get_tag
+        if: github.event.inputs.release_tag == ''
+        run: |
+          TAG=$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set deployment tag
+        id: set_tag
+        run: |
+          if [ -n "${{ github.event.inputs.release_tag }}" ]; then
+            echo "tag=${{ github.event.inputs.release_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ steps.get_tag.outputs.tag }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.set_tag.outputs.tag }}
 
       - name: Deploy infrastructure files to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HETZNER_HOST }}
-          username: ${{ secrets.HETZNER_USER }}
+          username: root
           key: ${{ secrets.HETZNER_SSH_KEY }}
           source: "docker-compose.yml"
           target: "/root/dekunstmakers-network/"
@@ -27,7 +50,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HETZNER_HOST }}
-          username: ${{ secrets.HETZNER_USER }}
+          username: root
           key: ${{ secrets.HETZNER_SSH_KEY }}
           script: |
             cd /root/dekunstmakers-network

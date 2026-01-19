@@ -101,6 +101,8 @@ services:
 
 volumes:
   postgres_data:
+    external: true
+    name: dekunstmakers-strapi_postgres_data
   traefik_letsencrypt:
   strapi_uploads:
 

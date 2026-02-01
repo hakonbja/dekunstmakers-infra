@@ -19,7 +19,7 @@ Consolidated Docker Compose setup for the Dekunstmakers platform.
 
 ### Initial Setup on Server
 
-1. Copy `.env.example` to `.env` on the server at `/root/dekunstmakers-infra/.env` and configure your environment variables
+1. Copy `.env.example` to `.env` on the server at `/root/dekunstmakers/.env` and configure your environment variables
 2. Run the GitHub Actions deployment workflow (it will copy `docker-compose.yml` and start services)
 
 Alternatively, you can manually clone the repository and run `docker-compose up -d` locally on the server.

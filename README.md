@@ -7,7 +7,7 @@ Consolidated Docker Compose setup for the Dekunstmakers platform.
 - **Traefik**: Reverse proxy with SSL termination
 - **Postgres**: Database for Strapi
 - **Strapi**: CMS backend (admin.dekunstmakers.com)
-- **Frontend**: Nuxt static site (new.dekunstmakers.com)
+- **Frontend**: Nuxt static site (www.dekunstmakers.com / dekunstmakers.com)
 
 ## Setup
 

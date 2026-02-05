@@ -91,10 +91,22 @@ services:
       - dekunstmakers-infra
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`new.dekunstmakers.com`)"
+      # Redirect non-www to www
+      - "traefik.http.middlewares.frontend-redirect.redirectregex.regex=^https?://dekunstmakers\\.com(.*)"
+      - "traefik.http.middlewares.frontend-redirect.redirectregex.replacement=https://www.dekunstmakers.com$${1}"
+      - "traefik.http.middlewares.frontend-redirect.redirectregex.permanent=true"
+      - "traefik.http.routers.frontend-redirect.rule=Host(`dekunstmakers.com`)"
+      - "traefik.http.routers.frontend-redirect.entrypoints=web"
+      - "traefik.http.routers.frontend-redirect.middlewares=frontend-redirect"
+      - "traefik.http.routers.frontend-redirect-secure.rule=Host(`dekunstmakers.com`)"
+      - "traefik.http.routers.frontend-redirect-secure.entrypoints=websecure"
+      - "traefik.http.routers.frontend-redirect-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.frontend-redirect-secure.middlewares=frontend-redirect"
+      # Main frontend router (www only)
+      - "traefik.http.routers.frontend.rule=Host(`www.dekunstmakers.com`)"
       - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
-      - "traefik.http.routers.frontend-secure.rule=Host(`new.dekunstmakers.com`)"
+      - "traefik.http.routers.frontend-secure.rule=Host(`www.dekunstmakers.com`)"
       - "traefik.http.routers.frontend-secure.entrypoints=websecure"
       - "traefik.http.routers.frontend-secure.tls.certresolver=letsencrypt"
       - "traefik.http.routers.frontend-secure.service=frontend"
